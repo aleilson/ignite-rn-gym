@@ -45,7 +45,7 @@ O app estará disponível no Expo GO.
 
 ## 💻 Projeto
 
-Ignite Gym é uma aplicação para controlar seus treinos, controlando a quantidade de exercicios, séries e repetições.
+Ignite Gym é uma aplicação para controlar seus treinos, a quantidade de exercicios, séries e repetições.
 
 Este é um projeto desenvolvido para praticar o conhecimento em React Native, Typescript e React Navigation.
 
