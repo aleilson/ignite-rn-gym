@@ -104,7 +104,14 @@ export function Profile() {
         </Center>
 
         <Center px={10} mt={12} mb={9}>
-          <Heading color="gray.200" fontSize="md" alignSelf="flex-start" mb={2} mt={12}>
+          <Heading
+            color="gray.200"
+            fontSize="md"
+            alignSelf="flex-start"
+            fontFamily="heading"
+            mb={2}
+            mt={12}
+          >
             Alterar senha
           </Heading>
 

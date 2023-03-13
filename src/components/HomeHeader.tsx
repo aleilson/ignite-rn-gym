@@ -18,7 +18,13 @@ export function HomeHeader() {
           Olá,
         </Text>
 
-        <Heading color="gray.100" fontSize="md">Aleilson</Heading>
+        <Heading
+          color="gray.100"
+          fontSize="md"
+          fontFamily="heading"
+        >
+          Aleilson
+        </Heading>
       </VStack>
 
 
