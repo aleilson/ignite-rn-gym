@@ -7,13 +7,16 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as yup from "yup";
 
+import { AppError } from "@utils/AppError";
+import { useAuth } from "@hooks/useAuth";
+import { api } from "@services/api";
+
+import defaultUserPhotoImg from '@assets/userPhotoDefault.png';
+
 import { ScreenHeader } from "@components/ScreenHeader";
 import { UserPhoto } from "@components/UserPhoto";
 import { Button } from "@components/Button";
-import { AppError } from "@utils/AppError";
 import { Input } from "@components/Input";
-import { useAuth } from "@hooks/useAuth";
-import { api } from "@services/api";
 
 const PHOTO_SIZE = 33;
 
@@ -50,10 +53,9 @@ const profileSchema = yup.object({
 export function Profile() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
-  const [userPhoto, setUserPhoto] = useState('https://github.com/aleilson.png');
 
   const toast = useToast();
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
     defaultValues: {
       name: user.name,
@@ -88,7 +90,32 @@ export function Profile() {
           });
         }
 
-        setUserPhoto(photoSelected.assets[0].uri);
+        const fileExtension = photoSelected.assets[0].uri.split('.').pop();
+        
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`
+        } as any;
+
+        const userPhotoUploadForm = new FormData();
+        userPhotoUploadForm.append('avatar', photoFile);
+
+        const avatarUpdatedResponse = await api.patch('/users/avatar', userPhotoUploadForm, {
+          headers: {
+            'Content-type': 'multipart/form-data'
+          }
+        });
+
+        const userUpdated = user;
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar;
+        updateUserProfile(userUpdated);
+
+        toast.show({
+          title: 'Foto atualizada!',
+          placement: 'top',
+          bgColor: 'green.500'
+        });
       }
 
     } catch (error) {
@@ -107,7 +134,12 @@ export function Profile() {
     try {
       setIsUpdating(true);
 
+      const userUpdated = user;
+      userUpdated.name = data.name;
+
       await api.put('/users', data);
+
+      await updateUserProfile(userUpdated);
 
       toast.show({
         title: 'Perfil atualizado com sucesso!',
@@ -144,7 +176,10 @@ export function Profile() {
             />
             :
             <UserPhoto
-              source={{ uri: userPhoto}}
+              source={
+                user.avatar
+                ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` }
+                : defaultUserPhotoImg }
               alt="Foto do usuário"
               size={PHOTO_SIZE}
             />
@@ -245,7 +280,7 @@ export function Profile() {
           />
        
           <Button
-            title="Atulizar"
+            title="Atualizar"
             mt={4}
             onPress={handleSubmit(handleProfileUpdate)}
             isLoading={isUpdating}
